@@ -355,25 +355,45 @@ LOGS_TEMPLATE = """
                         </h5>
                     </div>
                     <div class="card-body p-0">
-                        {% if log_files %}
-                            <div class="list-group list-group-flush">
-                                {% for log_file in log_files %}
-                                    <a href="#" class="list-group-item list-group-item-action log-item" 
-                                       onclick="loadLogContent('{{ log_file.name }}')">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">{{ log_file.name }}</h6>
-                                            <small>{{ log_file.modified }}</small>
+                        <div class="list-group list-group-flush">
+                            {% if parent_path is not none %}
+                                <a href="{{ url_for('logs', path=parent_path) }}" class="list-group-item list-group-item-action bg-light">
+                                    <i class="bi bi-arrow-90deg-up"></i> ..
+                                </a>
+                            {% endif %}
+                            
+                            {% for dir in directories %}
+                                <a href="{{ url_for('logs', path=dir.path) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-folder-fill text-warning me-2"></i>
+                                            {{ dir.name }}
                                         </div>
-                                        <small class="text-muted">{{ log_file.size }} bytes</small>
-                                    </a>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="text-center py-4 text-muted">
-                                <i class="bi bi-inbox fs-1"></i>
-                                <p class="mt-2">No log files found</p>
-                            </div>
-                        {% endif %}
+                                    </div>
+                                </a>
+                            {% endfor %}
+
+                            {% for file in files %}
+                                <a href="#" class="list-group-item list-group-item-action log-item" 
+                                   onclick="loadLogContent('{{ file.path }}')">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div>
+                                            <i class="bi bi-file-text me-2"></i>
+                                            {{ file.name }}
+                                        </div>
+                                        <small>{{ file.modified }}</small>
+                                    </div>
+                                    <small class="text-muted ms-4">{{ file.size }} bytes</small>
+                                </a>
+                            {% endfor %}
+                            
+                            {% if not directories and not files %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-1"></i>
+                                    <p class="mt-2">No logs found</p>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -426,6 +446,16 @@ def login_required(f):
     return decorated_function
 
 # Helper functions
+# Helper functions
+def is_safe_path(basedir, path, follow_symlinks=True):
+    """Check if path is within basedir"""
+    if follow_symlinks:
+        matchpath = os.path.realpath(path)
+    else:
+        matchpath = os.path.abspath(path)
+    basedir = os.path.realpath(basedir)
+    return basedir == os.path.commonpath((basedir, matchpath))
+
 def get_files_by_extension(directory, extension):
     """Get files with specific extension from directory"""
     if not os.path.exists(directory):
@@ -433,25 +463,47 @@ def get_files_by_extension(directory, extension):
     pattern = os.path.join(directory, f'*.{extension}')
     return [os.path.basename(f) for f in glob.glob(pattern)]
 
-def get_log_files():
-    """Get log files with metadata"""
-    if not os.path.exists(LOGS_DIR):
-        return []
+def get_log_files(subdir=''):
+    """Get log files and directories with metadata"""
+    target_dir = os.path.join(LOGS_DIR, subdir)
     
-    log_files = []
-    for filename in os.listdir(LOGS_DIR):
-        filepath = os.path.join(LOGS_DIR, filename)
-        if os.path.isfile(filepath):
-            stat = os.stat(filepath)
-            log_files.append({
-                'name': filename,
-                'size': stat.st_size,
-                'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
-            })
+    # Security check
+    if not is_safe_path(os.path.abspath(LOGS_DIR), os.path.abspath(target_dir)):
+        return [], []
+        
+    if not os.path.exists(target_dir):
+        return [], []
     
-    # Sort by modification time (newest first)
-    log_files.sort(key=lambda x: x['modified'], reverse=True)
-    return log_files
+    dirs = []
+    files = []
+    
+    try:
+        for filename in os.listdir(target_dir):
+            filepath = os.path.join(target_dir, filename)
+            # Use forward slashes for web paths
+            relative_path = os.path.join(subdir, filename).replace('\\', '/')
+            
+            if os.path.isdir(filepath):
+                dirs.append({
+                    'name': filename,
+                    'path': relative_path,
+                    'type': 'dir'
+                })
+            elif os.path.isfile(filepath):
+                stat = os.stat(filepath)
+                files.append({
+                    'name': filename,
+                    'path': relative_path,
+                    'size': stat.st_size,
+                    'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                    'type': 'file'
+                })
+    except OSError:
+        pass
+    
+    dirs.sort(key=lambda x: x['name'])
+    files.sort(key=lambda x: x['modified'], reverse=True)
+    return dirs, files
 
 # Routes
 @app.route('/')
@@ -547,14 +599,31 @@ def execute_task():
 @app.route('/logs')
 @login_required
 def logs():
-    log_files = get_log_files()
-    return render_template_string(LOGS_TEMPLATE, log_files=log_files)
+    path = request.args.get('path', '')
+    directories, files = get_log_files(path)
+    
+    # Calculate parent path
+    parent_path = None
+    if path:
+        parent_path = os.path.dirname(path)
+        if parent_path == '':
+            parent_path = None
+            
+    return render_template_string(LOGS_TEMPLATE, 
+                                directories=directories, 
+                                files=files, 
+                                current_path=path, 
+                                parent_path=parent_path)
 
-@app.route('/api/log/<filename>')
+@app.route('/api/log/<path:filename>')
 @login_required
 def api_log_content(filename):
     """API endpoint to get log file content"""
     filepath = os.path.join(LOGS_DIR, filename)
+    
+    # Security check
+    if not is_safe_path(os.path.abspath(LOGS_DIR), os.path.abspath(filepath)):
+        return jsonify({'error': 'Access denied'}), 403
     
     if not os.path.exists(filepath) or not os.path.isfile(filepath):
         return jsonify({'error': 'File not found'}), 404
