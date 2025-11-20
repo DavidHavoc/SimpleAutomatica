@@ -46,22 +46,6 @@ Ensure you have the following directory structure in the same folder as `app.py`
 ```
 
 ### 3. Configure the Application
-Edit the configuration section in `app.py`:
-
-```python
-# Configuration - CHANGE THIS PASSWORD IN PRODUCTION
-ADMIN_PASSWORD = 'admin123'  # Change this to your desired password
-
-# Server configuration
-HOST = '0.0.0.0'
-PORT = 8443
-DEBUG = False
-USE_HTTPS = False  # Set to True to enable HTTPS with self-signed certificates
-```
-
-## Security Configuration
-
-### Change Default Password
 Before deploying to production:
 add config.json to the same directory as app.py
 it will contain the following:
