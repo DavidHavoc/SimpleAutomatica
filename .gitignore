@@ -1,0 +1,7 @@
+logs/
+config.json
+cookies.txt
+__pycache__/
+*.pyc
+.DS_Store
+logs_list.html

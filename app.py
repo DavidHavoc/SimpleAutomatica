@@ -11,17 +11,82 @@ from datetime import datetime
 from flask import Flask, render_template_string, request, redirect, url_for, session, flash, jsonify
 from functools import wraps
 
+import json
+import sys
+
 app = Flask(__name__)
 
-# Configuration - CHANGE THIS PASSWORD IN PRODUCTION
-app.secret_key = 'your-secret-key-change-this-in-production'
-ADMIN_PASSWORD = 'admin123'  # Change this to your desired password
+# Load configuration
+CONFIG_FILE = 'config.json'
+CONFIG_ERROR = False
 
-# Server configuration
-HOST = '0.0.0.0'
-PORT = 8443
-DEBUG = False
-USE_HTTPS = False  # Set to True to enable HTTPS with self-signed certificates
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        return None
+        
+    try:
+        with open(CONFIG_FILE, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading config.json: {e}")
+        return None
+
+config = load_config()
+
+if config:
+    # Configuration
+    app.secret_key = config.get('secret_key', 'default-insecure-secret-key')
+    USERS = config.get('users', {})
+
+    # Server configuration
+    HOST = config.get('host', '0.0.0.0')
+    PORT = config.get('port', 8443)
+    DEBUG = config.get('debug', False)
+    USE_HTTPS = config.get('use_https', False)
+else:
+    CONFIG_ERROR = True
+    # Default settings just to serve the error page
+    HOST = '0.0.0.0'
+    PORT = 8443
+    DEBUG = False
+    USE_HTTPS = False
+    USERS = {}
+    app.secret_key = 'error-mode'
+
+@app.before_request
+def check_config():
+    if CONFIG_ERROR:
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Configuration Error</title>
+            <style>
+                body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f8d7da; color: #721c24; }
+                .container { text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                h1 { margin-bottom: 1rem; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Configuration Error</h1>
+                <p>The application could not load <code>config.json</code>.</p>
+                <p>Please ensure the file exists and contains valid JSON.</p>
+            </div>
+        </body>
+        </html>
+        """, 503
+
+# Activity Logger
+def log_activity(username, action, details=None):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_entry = f"[{timestamp}] User: {username} | Action: {action}"
+    if details:
+        log_entry += f" | Details: {details}"
+    
+    log_file = os.path.join(LOGS_DIR, 'activity.log')
+    with open(log_file, 'a') as f:
+        f.write(log_entry + "\n")
 
 # Directory paths
 PLAYBOOKS_DIR = './playbooks'
@@ -102,7 +167,7 @@ LOGIN_TEMPLATE = """
         <form method="POST">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" value="admin" readonly>
+                <input type="text" class="form-control" id="username" name="username" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
@@ -222,20 +287,37 @@ DASHBOARD_TEMPLATE = """
                                     <option value="">Select task type first...</option>
                                 </select>
                             </div>
-                            <div class="mb-4">
-                                <label for="inventory" class="form-label">Inventory</label>
-                                <select class="form-select" id="inventory" name="inventory" required>
-                                    <option value="">Select inventory...</option>
-                                    {% for inv in inventories %}
-                                        <option value="{{ inv }}">{{ inv }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-success btn-execute">
-                                    <i class="bi bi-play-fill"></i> Execute
-                                </button>
-                            </div>
+                            <div class="mb-3">
+                <label for="inventory" class="form-label">Inventory File</label>
+                <select class="form-select" id="inventory" name="inventory" required>
+                    <option value="" selected disabled>Select inventory...</option>
+                    {% for inv in inventory_files %}
+                        <option value="{{ inv }}">{{ inv }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="forks" class="form-label">Parallelism (Forks)</label>
+                    <select class="form-select" id="forks" name="forks">
+                        <option value="1" selected>1 (recommended)</option>
+                        {% for i in range(2, 11) %}
+                            <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="true" id="verbose" name="verbose">
+                        <label class="form-check-label" for="verbose">
+                            Verbose Output
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Start Job</button>
                         </form>
                     </div>
                 </div>
@@ -518,17 +600,21 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        if username == 'admin' and password == ADMIN_PASSWORD:
+        if username in USERS and USERS[username] == password:
             session['logged_in'] = True
             session['username'] = username
+            log_activity(username, "LOGIN", "Successful login")
             return redirect(url_for('dashboard'))
         else:
+            log_activity(username, "LOGIN_FAILED", "Invalid credentials")
             flash('Invalid username or password')
     
     return render_template_string(LOGIN_TEMPLATE)
 
 @app.route('/logout')
 def logout():
+    if 'username' in session:
+        log_activity(session['username'], "LOGOUT", "User logged out")
     session.clear()
     return redirect(url_for('login'))
 
@@ -539,13 +625,13 @@ def dashboard():
     playbook_files = get_files_by_extension(PLAYBOOKS_DIR, 'yml')
     powershell_files = get_files_by_extension(PLAYBOOKS_DIR, 'ps1')
     shell_files = get_files_by_extension(PLAYBOOKS_DIR, 'sh')
-    inventories = get_files_by_extension(INVENTORY_DIR, 'ini')
+    inventory_files = get_files_by_extension(INVENTORY_DIR, 'ini')
     
     return render_template_string(DASHBOARD_TEMPLATE,
                                 playbook_files=playbook_files,
                                 powershell_files=powershell_files,
                                 shell_files=shell_files,
-                                inventories=inventories)
+                                inventory_files=inventory_files)
 
 @app.route('/execute_task', methods=['POST'])
 @login_required
@@ -553,6 +639,8 @@ def execute_task():
     task_type = request.form.get('task_type')
     target_file = request.form.get('target_file')
     inventory = request.form.get('inventory')
+    verbose = request.form.get('verbose') == 'true'
+    forks = request.form.get('forks', '1')
     
     if not all([task_type, target_file, inventory]):
         flash('Please fill in all fields')
@@ -579,19 +667,31 @@ def execute_task():
     try:
         # Execute the command
         command = [
-            'python3', script_wrapper,
+            sys.executable, script_wrapper,
             '--playbooks', playbook_path,
-            '--inventory', inventory_path
+            '--inventory', inventory_path,
+            '--forks', str(forks)
         ]
         
-        # Run in background (non-blocking)
-        subprocess.Popen(command, 
-                        stdout=subprocess.DEVNULL, 
-                        stderr=subprocess.DEVNULL)
+        if verbose:
+            command.append('--verbose')
         
+        # Run in background but capture output to a debug log
+        debug_log = os.path.join(LOGS_DIR, 'debug_execution.log')
+        with open(debug_log, 'a') as f:
+            f.write(f"[{datetime.now()}] Starting command: {' '.join(command)}\n")
+            
+        # We use Popen but redirect to a file to debug
+        with open(debug_log, 'a') as outfile:
+            subprocess.Popen(command, 
+                            stdout=outfile, 
+                            stderr=outfile)
+        
+        log_activity(session['username'], "EXECUTE_TASK", f"Type: {task_type}, File: {target_file}, Inventory: {inventory}")
         flash(f'Job started successfully: {task_type} - {target_file}')
         
     except Exception as e:
+        log_activity(session['username'], "EXECUTE_TASK_ERROR", f"Error: {str(e)}")
         flash(f'Error starting job: {str(e)}')
     
     return redirect(url_for('dashboard'))
@@ -638,7 +738,7 @@ def api_log_content(filename):
 if __name__ == '__main__':
     print("Starting Automation Dashboard...")
     print(f"Server will run on http{'s' if USE_HTTPS else ''}://{HOST}:{PORT}")
-    print(f"Login with username: admin, password: {ADMIN_PASSWORD}")
+    print(f"Login with configured users")
     print(f"Playbooks directory: {PLAYBOOKS_DIR}")
     print(f"Inventory directory: {INVENTORY_DIR}")
     print(f"Logs directory: {LOGS_DIR}")
