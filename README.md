@@ -31,6 +31,7 @@ Ensure you have the following directory structure in the same folder as `app.py`
 
 ```
 .
+├── config.json
 ├── app.py                    # Main Flask application
 ├── playbooks/                # Directory containing .yml, .sh, .ps1 files
 │   ├── example.yml
