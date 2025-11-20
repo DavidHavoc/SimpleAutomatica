@@ -10,8 +10,8 @@ def main():
     parser = argparse.ArgumentParser(description='Run Ansible Playbook')
     parser.add_argument('--playbooks', required=True, help='Path to playbook file')
     parser.add_argument('--inventory', required=True, help='Path to inventory file')
-    parser.add_argument('--verbose', action='store_true', help='Enable verbose output') # Added verbose argument
-    parser.add_argument('--forks', default='1', help='Number of forks') # Added forks argument
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose output') 
+    parser.add_argument('--forks', default='1', help='Number of forks') 
     args = parser.parse_args()
 
     # Create logs directory if it doesn't exist

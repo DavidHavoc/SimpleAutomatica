@@ -107,7 +107,7 @@ LOGIN_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Automation Dashboard</title>
+    <title>Login - simple_Automatica</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -151,7 +151,7 @@ LOGIN_TEMPLATE = """
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h2>Automation Dashboard</h2>
+            <h2>simple_Automatica</h2>
             <p class="text-muted">Please sign in to continue</p>
         </div>
         {% with messages = get_flashed_messages() %}
@@ -175,6 +175,9 @@ LOGIN_TEMPLATE = """
             </div>
             <button type="submit" class="btn btn-primary btn-login w-100">Sign In</button>
         </form>
+        <div class="text-center mt-3 text-muted">
+            <small>&copy; 2026 David Zhorzholiani</small>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
@@ -187,7 +190,7 @@ DASHBOARD_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Automation Dashboard</title>
+    <title>Dashboard - simple_Automatica</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -234,7 +237,7 @@ DASHBOARD_TEMPLATE = """
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-rocket-takeoff"></i> Automation Dashboard
+                <i class="bi bi-rocket-takeoff"></i> simple_Automatica
             </a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
@@ -357,6 +360,9 @@ DASHBOARD_TEMPLATE = """
             targetFileSelect.disabled = files.length === 0;
         });
     </script>
+    <footer class="text-center py-4 text-muted">
+        <small>&copy; 2026 David Zhorzholiani</small>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
@@ -368,7 +374,7 @@ LOGS_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logs - Automation Dashboard</title>
+    <title>Logs - simple_Automatica</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -411,7 +417,7 @@ LOGS_TEMPLATE = """
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-rocket-takeoff"></i> Automation Dashboard
+                <i class="bi bi-rocket-takeoff"></i> simple_Automatica
             </a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
@@ -513,6 +519,9 @@ LOGS_TEMPLATE = """
                 });
         }
     </script>
+    <footer class="text-center py-4 text-muted">
+        <small>&copy; 2026 David Zhorzholiani</small>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
