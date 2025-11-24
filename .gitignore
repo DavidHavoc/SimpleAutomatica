@@ -1,5 +1,4 @@
 logs/
-config.json
 cookies.txt
 __pycache__/
 *.pyc
