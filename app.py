@@ -8,7 +8,7 @@ import os
 import subprocess
 import glob
 from datetime import datetime
-from flask import Flask, render_template_string, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from functools import wraps
 
 import json
@@ -56,26 +56,7 @@ else:
 @app.before_request
 def check_config():
     if CONFIG_ERROR:
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Configuration Error</title>
-            <style>
-                body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f8d7da; color: #721c24; }
-                .container { text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                h1 { margin-bottom: 1rem; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>Configuration Error</h1>
-                <p>The application could not load <code>config.json</code>.</p>
-                <p>Please ensure the file exists and contains valid JSON.</p>
-            </div>
-        </body>
-        </html>
-        """, 503
+        return render_template('pages/config_error.html'), 503
 
 # Activity Logger
 def log_activity(username, action, details=None):
@@ -100,432 +81,7 @@ SCRIPT_WRAPPERS = {
     'shell': './run_sh_with_ansible.py'
 }
 
-# HTML Templates
-LOGIN_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - simple_Automatica</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            max-width: 400px;
-            width: 100%;
-        }
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .login-header h2 {
-            color: #333;
-            font-weight: 600;
-        }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 0.75rem;
-            font-weight: 600;
-        }
-        .btn-login:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <div class="login-header">
-            <h2>simple_Automatica</h2>
-            <p class="text-muted">Please sign in to continue</p>
-        </div>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST">
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-login w-100">Sign In</button>
-        </form>
-        <div class="text-center mt-3 text-muted">
-            <small>&copy; 2026 David Zhorzholiani</small>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-"""
-
-DASHBOARD_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - simple_Automatica</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .navbar-brand {
-            font-weight: 600;
-        }
-        .dashboard-container {
-            padding: 2rem;
-        }
-        .card {
-            border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            transition: transform 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-        .btn-execute {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border: none;
-            padding: 0.5rem 2rem;
-        }
-        .btn-execute:hover {
-            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
-        }
-        .nav-link {
-            transition: color 0.2s;
-        }
-        .nav-link:hover {
-            color: #667eea !important;
-        }
-        .nav-link.active {
-            color: #667eea !important;
-            font-weight: 600;
-        }
-        .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-rocket-takeoff"></i> simple_Automatica
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
-                    <i class="bi bi-file-text"></i> Logs
-                </a>
-                <a class="nav-link text-danger" href="{{ url_for('logout') }}">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container dashboard-container">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle"></i> {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-play-circle text-primary"></i> Execute Automation Task
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ url_for('execute_task') }}">
-                            <div class="mb-3">
-                                <label for="task_type" class="form-label">Task Type</label>
-                                <select class="form-select" id="task_type" name="task_type" required>
-                                    <option value="">Select task type...</option>
-                                    <option value="ansible">Run Ansible Playbook</option>
-                                    <option value="powershell">Run PowerShell Script</option>
-                                    <option value="shell">Run Shell Script</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="target_file" class="form-label">Target File</label>
-                                <select class="form-select" id="target_file" name="target_file" required disabled>
-                                    <option value="">Select task type first...</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                <label for="inventory" class="form-label">Inventory File</label>
-                <select class="form-select" id="inventory" name="inventory" required>
-                    <option value="" selected disabled>Select inventory...</option>
-                    {% for inv in inventory_files %}
-                        <option value="{{ inv }}">{{ inv }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="forks" class="form-label">Parallelism (Forks)</label>
-                    <select class="form-select" id="forks" name="forks">
-                        <option value="1" selected>1 (recommended)</option>
-                        {% for i in range(2, 11) %}
-                            <option value="{{ i }}">{{ i }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="true" id="verbose" name="verbose">
-                        <label class="form-check-label" for="verbose">
-                            Verbose Output
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Start Job</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const playbookFiles = {{ playbook_files | tojson }};
-        const powershellFiles = {{ powershell_files | tojson }};
-        const shellFiles = {{ shell_files | tojson }};
-
-        document.getElementById('task_type').addEventListener('change', function() {
-            const targetFileSelect = document.getElementById('target_file');
-            targetFileSelect.innerHTML = '<option value="">Select file...</option>';
-            
-            let files = [];
-            switch(this.value) {
-                case 'ansible':
-                    files = playbookFiles;
-                    break;
-                case 'powershell':
-                    files = powershellFiles;
-                    break;
-                case 'shell':
-                    files = shellFiles;
-                    break;
-            }
-            
-            files.forEach(file => {
-                const option = document.createElement('option');
-                option.value = file;
-                option.textContent = file;
-                targetFileSelect.appendChild(option);
-            });
-            
-            targetFileSelect.disabled = files.length === 0;
-        });
-    </script>
-    <footer class="text-center py-4 text-muted">
-        <small>&copy; 2026 David Zhorzholiani</small>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-"""
-
-LOGS_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logs - simple_Automatica</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .navbar-brand {
-            font-weight: 600;
-        }
-        .logs-container {
-            padding: 2rem;
-        }
-        .log-item {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .log-item:hover {
-            background-color: #f8f9fa;
-        }
-        .log-content {
-            background-color: #f8f9fa;
-            border-radius: 0.375rem;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
-            white-space: pre-wrap;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .nav-link {
-            transition: color 0.2s;
-        }
-        .nav-link:hover {
-            color: #667eea !important;
-        }
-        .nav-link.active {
-            color: #667eea !important;
-            font-weight: 600;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-rocket-takeoff"></i> simple_Automatica
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
-                    <i class="bi bi-file-text"></i> Logs
-                </a>
-                <a class="nav-link text-danger" href="{{ url_for('logout') }}">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container logs-container">
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-journal-text text-primary"></i> Log Files
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            {% if parent_path is not none %}
-                                <a href="{{ url_for('logs', path=parent_path) }}" class="list-group-item list-group-item-action bg-light">
-                                    <i class="bi bi-arrow-90deg-up"></i> ..
-                                </a>
-                            {% endif %}
-                            
-                            {% for dir in directories %}
-                                <a href="{{ url_for('logs', path=dir.path) }}" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-folder-fill text-warning me-2"></i>
-                                            {{ dir.name }}
-                                        </div>
-                                    </div>
-                                </a>
-                            {% endfor %}
-
-                            {% for file in files %}
-                                <a href="#" class="list-group-item list-group-item-action log-item" 
-                                   onclick="loadLogContent('{{ file.path }}')">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <div>
-                                            <i class="bi bi-file-text me-2"></i>
-                                            {{ file.name }}
-                                        </div>
-                                        <small>{{ file.modified }}</small>
-                                    </div>
-                                    <small class="text-muted ms-4">{{ file.size }} bytes</small>
-                                </a>
-                            {% endfor %}
-                            
-                            {% if not directories and not files %}
-                                <div class="text-center py-4 text-muted">
-                                    <i class="bi bi-inbox fs-1"></i>
-                                    <p class="mt-2">No logs found</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-file-earmark-text text-primary"></i> 
-                            <span id="log-title">Select a log file to view</span>
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="log-content" class="log-content">
-                            <div class="text-center text-muted">
-                                <i class="bi bi-arrow-left"></i> Select a log file from the left to view its content
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function loadLogContent(filename) {
-            fetch(`/api/log/${filename}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('log-title').textContent = filename;
-                    document.getElementById('log-content').textContent = data.content || 'Log file is empty';
-                })
-                .catch(error => {
-                    console.error('Error loading log content:', error);
-                    document.getElementById('log-content').textContent = 'Error loading log content';
-                });
-        }
-    </script>
-    <footer class="text-center py-4 text-muted">
-        <small>&copy; 2026 David Zhorzholiani</small>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-"""
+# Templates moved to separate template files
 
 # Authentication decorator
 def login_required(f):
@@ -596,6 +152,20 @@ def get_log_files(subdir=''):
     files.sort(key=lambda x: x['modified'], reverse=True)
     return dirs, files
 
+def build_breadcrumbs(current_path):
+    """Build breadcrumb entries for the logs explorer"""
+    breadcrumbs = [{'name': 'Logs', 'path': None}]
+    if current_path:
+        parts = current_path.strip('/').split('/')
+        accumulated = []
+        for part in parts:
+            accumulated.append(part)
+            breadcrumbs.append({
+                'name': part,
+                'path': '/'.join(accumulated)
+            })
+    return breadcrumbs
+
 # Routes
 @app.route('/')
 def index():
@@ -618,7 +188,7 @@ def login():
             log_activity(username, "LOGIN_FAILED", "Invalid credentials")
             flash('Invalid username or password')
     
-    return render_template_string(LOGIN_TEMPLATE)
+    return render_template('pages/login.html')
 
 @app.route('/logout')
 def logout():
@@ -636,11 +206,13 @@ def dashboard():
     shell_files = get_files_by_extension(PLAYBOOKS_DIR, 'sh')
     inventory_files = get_files_by_extension(INVENTORY_DIR, 'ini')
     
-    return render_template_string(DASHBOARD_TEMPLATE,
-                                playbook_files=playbook_files,
-                                powershell_files=powershell_files,
-                                shell_files=shell_files,
-                                inventory_files=inventory_files)
+    return render_template(
+        'pages/dashboard.html',
+        playbook_files=playbook_files,
+        powershell_files=powershell_files,
+        shell_files=shell_files,
+        inventory_files=inventory_files
+    )
 
 @app.route('/execute_task', methods=['POST'])
 @login_required
@@ -708,21 +280,28 @@ def execute_task():
 @app.route('/logs')
 @login_required
 def logs():
-    path = request.args.get('path', '')
-    directories, files = get_log_files(path)
+    raw_path = request.args.get('path', '')
+    current_path = raw_path.strip('/') if raw_path else ''
+    directories, files = get_log_files(current_path)
     
-    # Calculate parent path
+    # Calculate parent path - handle forward slashes properly
     parent_path = None
-    if path:
-        parent_path = os.path.dirname(path)
-        if parent_path == '':
-            parent_path = None
+    if current_path:
+        # Split by forward slash and remove last part
+        parts = current_path.split('/')
+        if len(parts) > 1:
+            parent_path = '/'.join(parts[:-1])
+        elif len(parts) == 1 and parts[0]:
+            parent_path = None  # At root level
             
-    return render_template_string(LOGS_TEMPLATE, 
-                                directories=directories, 
-                                files=files, 
-                                current_path=path, 
-                                parent_path=parent_path)
+    return render_template(
+        'pages/logs.html',
+        directories=directories,
+        files=files,
+        current_path=current_path,
+        parent_path=parent_path,
+        breadcrumbs=build_breadcrumbs(current_path)
+    )
 
 @app.route('/api/log/<path:filename>')
 @login_required

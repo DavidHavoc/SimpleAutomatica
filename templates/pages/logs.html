@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - simple_Automatica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --burgundy: #872341;
+            --red: #BE3144;
+            --coral: #E17564;
+            --dark-red: #6b1c2f;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--black);
+            color: #e0e0e0;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 100%);
+            box-shadow: 0 4px 20px rgba(190, 49, 68, 0.3);
+            border-bottom: 2px solid var(--burgundy);
+        }
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--coral) !important;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7) !important;
+            margin-left: 0.5rem;
+            border-radius: 999px;
+            padding-inline: 1rem !important;
+            transition: all 0.2s ease;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #fff !important;
+            background: var(--red);
+        }
+        .logs-container {
+            padding: 2rem;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid rgba(190, 49, 68, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--dark-red), var(--burgundy));
+            color: #fff;
+            border-radius: 16px 16px 0 0 !important;
+            border-bottom: none;
+        }
+        .card-body {
+            background: #1a1a1a;
+        }
+        .list-group-item {
+            background: #1a1a1a;
+            border-color: rgba(190, 49, 68, 0.2);
+            color: #e0e0e0;
+        }
+        .log-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .log-item:hover {
+            background-color: rgba(225, 117, 100, 0.1) !important;
+            border-color: var(--coral) !important;
+        }
+        .log-item small {
+            color: var(--red) !important;
+            font-weight: 500;
+        }
+        .log-content {
+            background-color: #0f0f0f;
+            border: 1px solid rgba(190, 49, 68, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            color: #e0e0e0;
+        }
+        .breadcrumb {
+            background-color: rgba(190, 49, 68, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(190, 49, 68, 0.2);
+        }
+        .breadcrumb-item {
+            color: #e0e0e0;
+        }
+        .breadcrumb-item.active {
+            color: var(--coral);
+        }
+        .breadcrumb-item a {
+            color: var(--red);
+            text-decoration: none;
+        }
+        .breadcrumb-item a:hover {
+            color: var(--coral);
+        }
+        .list-group-item-action:hover {
+            background-color: rgba(225, 117, 100, 0.1);
+        }
+        .bg-light {
+            background-color: rgba(190, 49, 68, 0.15) !important;
+            color: #fff !important;
+        }
+        footer {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .bi-folder-fill {
+            color: var(--coral);
+        }
+        .bi-file-text {
+            color: var(--red);
+        }
+        .text-muted {
+            color: var(--red) !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                simple_Automatica
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto navbar-nav">
+                    <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
+                        <i class="bi bi-file-text"></i> Logs
+                    </a>
+                    <a class="nav-link" href="{{ url_for('logout') }}">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container logs-container">
+        {% if breadcrumbs %}
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                {% for crumb in breadcrumbs %}
+                    {% if loop.last %}
+                        <li class="breadcrumb-item active" aria-current="page">
+                            {{ crumb.name }}
+                        </li>
+                    {% else %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('logs', path=crumb.path if crumb.path else '') }}">{{ crumb.name }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-journal-text"></i> Log Files
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% if parent_path is not none %}
+                                <a href="{{ url_for('logs', path=parent_path) }}" class="list-group-item list-group-item-action bg-light">
+                                    <i class="bi bi-arrow-90deg-up"></i> .. (Go Up)
+                                </a>
+                            {% endif %}
+
+                            {% for dir in directories %}
+                                <a href="{{ url_for('logs', path=dir.path) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-folder-fill me-2"></i>
+                                            {{ dir.name }}
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+
+                            {% for file in files %}
+                                <a href="#" class="list-group-item list-group-item-action log-item" 
+                                   onclick="loadLogContent('{{ file.path }}')">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div>
+                                            <i class="bi bi-file-text me-2"></i>
+                                            {{ file.name }}
+                                        </div>
+                                        <small>{{ file.modified }}</small>
+                                    </div>
+                                    <small class="ms-4">{{ file.size }} bytes</small>
+                                </a>
+                            {% endfor %}
+
+                            {% if not directories and not files and parent_path is none %}
+                                <div class="text-center py-4" style="color: rgba(255, 255, 255, 0.5);">
+                                    <i class="bi bi-inbox fs-1"></i>
+                                    <p class="mt-2">No logs found</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-file-earmark-text"></i> 
+                            <span id="log-title">Select a log file to view</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="log-content" class="log-content">
+                            <div class="text-center" style="color: rgba(255, 255, 255, 0.5);">
+                                <i class="bi bi-arrow-left"></i> Select a log file from the left to view its content
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadLogContent(filename) {
+            fetch(`/api/log/${filename}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('log-title').textContent = filename;
+                    document.getElementById('log-content').textContent = data.content || 'Log file is empty';
+                })
+                .catch(error => {
+                    console.error('Error loading log content:', error);
+                    document.getElementById('log-content').textContent = 'Error loading log content';
+                });
+        }
+    </script>
+    <footer class="text-center py-4">
+        <small>&copy; 2026 David Zhorzholiani</small>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

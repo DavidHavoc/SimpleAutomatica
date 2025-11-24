@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - simple_Automatica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --burgundy: #872341;
+            --red: #BE3144;
+            --coral: #E17564;
+            --dark-red: #6b1c2f;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--black);
+            color: #e0e0e0;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: -25%;
+            background-image:
+                linear-gradient(90deg, rgba(190, 49, 68, 0.08) 2px, transparent 2px),
+                linear-gradient(0deg, rgba(190, 49, 68, 0.04) 1px, transparent 1px);
+            background-size: 160px 160px;
+            animation: sweep-lines 2.5s ease-out forwards;
+            opacity: 0;
+            pointer-events: none;
+        }
+        @keyframes sweep-lines {
+            0% {
+                opacity: 0.25;
+                transform: translateX(0);
+            }
+            60% {
+                opacity: 0.15;
+            }
+            100% {
+                opacity: 0.08;
+                transform: translateX(-140px);
+            }
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 100%);
+            box-shadow: 0 4px 20px rgba(190, 49, 68, 0.3);
+            border-bottom: 2px solid var(--burgundy);
+        }
+        .navbar-brand {
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--coral) !important;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7) !important;
+            margin-left: 0.5rem;
+            border-radius: 999px;
+            padding-inline: 1rem !important;
+            transition: all 0.2s ease;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #fff !important;
+            background: var(--red);
+        }
+        .dashboard-wrapper {
+            position: relative;
+            z-index: 1;
+            padding: 3rem 1.5rem 4rem;
+        }
+        .hero-card {
+            background: linear-gradient(135deg, var(--dark-red), var(--burgundy));
+            border-radius: 28px;
+            padding: 2.5rem;
+            color: #fff;
+            box-shadow: 0 30px 80px rgba(135, 35, 65, 0.5);
+            border: 1px solid rgba(190, 49, 68, 0.3);
+            position: relative;
+        }
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+        }
+        .help-icon {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: help;
+            transition: all 0.3s ease;
+        }
+        .help-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .help-tooltip {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--coral);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            min-width: 320px;
+            max-width: 400px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .help-icon:hover .help-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .help-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 12px;
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid var(--coral);
+            border-right: 1px solid var(--coral);
+            transform: rotate(-45deg);
+        }
+        .help-tooltip p {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #e0e0e0;
+        }
+        .main-card {
+            margin-top: -90px;
+            background: #1a1a1a;
+            border: 1px solid rgba(190, 49, 68, 0.2);
+            border-radius: 28px;
+            padding: 3rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+        }
+        label { 
+            font-weight: 500; 
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        .form-select, .form-control {
+            border-radius: 12px;
+            padding: 0.9rem;
+            border: 1px solid rgba(190, 49, 68, 0.3);
+            background: #0f0f0f;
+            color: #e0e0e0;
+        }
+        .form-select:focus, .form-control:focus {
+            border-color: var(--coral);
+            box-shadow: 0 0 0 0.2rem rgba(225, 117, 100, 0.25);
+            background: #0f0f0f;
+            color: #e0e0e0;
+        }
+        .form-select option {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .form-check-input {
+            background-color: #0f0f0f;
+            border-color: rgba(190, 49, 68, 0.3);
+        }
+        .form-check-input:checked {
+            background-color: var(--red);
+            border-color: var(--red);
+        }
+        .form-check-input:focus {
+            border-color: var(--coral);
+            box-shadow: 0 0 0 0.2rem rgba(225, 117, 100, 0.25);
+        }
+        .form-check-label {
+            color: #e0e0e0;
+        }
+        .btn-execute {
+            background: linear-gradient(135deg, var(--burgundy), var(--red));
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 18px;
+            padding: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-execute:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px rgba(190, 49, 68, 0.5);
+            background: linear-gradient(135deg, #9a2849, #d13a4f);
+        }
+        .alert-success {
+            background: rgba(190, 49, 68, 0.15);
+            border: 1px solid rgba(190, 49, 68, 0.3);
+            color: #e0e0e0;
+            border-radius: 16px;
+        }
+        .alert-success .btn-close {
+            filter: invert(1);
+        }
+        footer {
+            color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                simple_Automatica
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto navbar-nav">
+                    <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
+                        <i class="bi bi-file-text"></i> Logs
+                    </a>
+                    <a class="nav-link" href="{{ url_for('logout') }}">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper container">
+        <div class="hero-card mb-5">
+            <div class="hero-pill mb-3">
+                Automation Hub
+            </div>
+            <h1 class="display-6 fw-semibold mb-0">Trigger playbooks with confidence</h1>
+            
+            <div class="help-icon">
+                <i class="bi bi-question-lg"></i>
+                <div class="help-tooltip">
+                    <p>Choose a task, match the right inventory, and launch it with curated defaults designed for safe execution.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-card">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('execute_task') }}">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="task_type" class="form-label">Task Type</label>
+                        <select class="form-select" id="task_type" name="task_type" required>
+                            <option value="">Select task type...</option>
+                            <option value="ansible">Run Ansible Playbook</option>
+                            <option value="powershell">Run PowerShell Script</option>
+                            <option value="shell">Run Shell Script</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="target_file" class="form-label">Target File</label>
+                        <select class="form-select" id="target_file" name="target_file" required disabled>
+                            <option value="">Select task type first...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inventory" class="form-label">Inventory File</label>
+                        <select class="form-select" id="inventory" name="inventory" required>
+                            <option value="" selected disabled>Select inventory...</option>
+                            {% for inv in inventory_files %}
+                                <option value="{{ inv }}">{{ inv }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="forks" class="form-label">Parallelism (Forks)</label>
+                        <select class="form-select" id="forks" name="forks">
+                            <option value="1" selected>1 (recommended)</option>
+                            {% for i in range(2, 11) %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" value="true" id="verbose" name="verbose">
+                            <label class="form-check-label" for="verbose">Verbose Output</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-execute w-100">
+                        <i class="bi bi-play-circle me-2"></i>Start Job
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="text-center py-4">
+        <small>&copy; 2026 David Zhorzholiani</small>
+    </footer>
+
+    <script>
+        const playbookFiles = {{ playbook_files | tojson }};
+        const powershellFiles = {{ powershell_files | tojson }};
+        const shellFiles = {{ shell_files | tojson }};
+
+        document.getElementById('task_type').addEventListener('change', function() {
+            const targetFileSelect = document.getElementById('target_file');
+            targetFileSelect.innerHTML = '<option value="">Select file...</option>';
+
+            let files = [];
+            switch (this.value) {
+                case 'ansible':
+                    files = playbookFiles;
+                    break;
+                case 'powershell':
+                    files = powershellFiles;
+                    break;
+                case 'shell':
+                    files = shellFiles;
+                    break;
+                default:
+                    files = [];
+            }
+
+            files.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                targetFileSelect.appendChild(option);
+            });
+
+            targetFileSelect.disabled = files.length === 0;
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Error</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --burgundy: #872341;
+            --red: #BE3144;
+            --coral: #E17564;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: -25%;
+            background-image:
+                linear-gradient(90deg, rgba(190, 49, 68, 0.1) 2px, transparent 2px),
+                linear-gradient(0deg, rgba(190, 49, 68, 0.05) 1px, transparent 1px);
+            background-size: 160px 160px;
+            animation: sweep-lines 2.5s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes sweep-lines {
+            0% {
+                opacity: 0.25;
+                transform: translateX(0);
+            }
+            60% {
+                opacity: 0.15;
+            }
+            100% {
+                opacity: 0.08;
+                transform: translateX(-140px);
+            }
+        }
+        .panel {
+            width: min(520px, 100%);
+            background: #1a1a1a;
+            border: 1px solid rgba(190, 49, 68, 0.3);
+            border-radius: 28px;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(190, 49, 68, 0.3);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--red);
+            color: #fff;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+        }
+        h1 {
+            margin: 1.5rem 0 1rem;
+            font-size: 1.9rem;
+            color: #fff;
+        }
+        p {
+            margin: 0.85rem 0;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+        code {
+            background: rgba(190, 49, 68, 0.2);
+            color: var(--coral);
+            padding: 0.2rem 0.45rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <div class="badge">Configuration</div>
+        <h1>We couldn't load config.json</h1>
+        <p>Please ensure <code>config.json</code> exists in the project root, is readable, and contains valid JSON.</p>
+        <p>Once fixed, refresh this page to access the dashboard.</p>
+    </div>
+</body>
+</html>
