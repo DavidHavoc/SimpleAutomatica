@@ -197,6 +197,38 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+def get_recent_logs(hours=1):
+    """Get log files modified within the last X hours"""
+    recent_logs = []
+    cutoff_time = datetime.now().timestamp() - (hours * 3600)
+    
+    def scan_directory(directory, base_path=''):
+        if not os.path.exists(directory):
+            return
+        try:
+            for item in os.listdir(directory):
+                item_path = os.path.join(directory, item)
+                relative_path = os.path.join(base_path, item).replace('\\', '/')
+                
+                if os.path.isdir(item_path):
+                    scan_directory(item_path, relative_path)
+                elif os.path.isfile(item_path):
+                    stat = os.stat(item_path)
+                    if stat.st_mtime >= cutoff_time:
+                        recent_logs.append({
+                            'name': item,
+                            'path': relative_path,
+                            'size': stat.st_size,
+                            'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                            'timestamp': stat.st_mtime
+                        })
+        except OSError:
+            pass
+    
+    scan_directory(LOGS_DIR)
+    recent_logs.sort(key=lambda x: x['timestamp'], reverse=True)
+    return recent_logs[:10]  # Return max 10 recent logs
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -206,12 +238,16 @@ def dashboard():
     shell_files = get_files_by_extension(PLAYBOOKS_DIR, 'sh')
     inventory_files = get_files_by_extension(INVENTORY_DIR, 'ini')
     
+    # Get recent logs from the last hour
+    recent_logs = get_recent_logs(hours=1)
+    
     return render_template(
         'pages/dashboard.html',
-        playbook_files=playbook_files,
-        powershell_files=powershell_files,
-        shell_files=shell_files,
-        inventory_files=inventory_files
+                                playbook_files=playbook_files,
+                                powershell_files=powershell_files,
+                                shell_files=shell_files,
+        inventory_files=inventory_files,
+        recent_logs=recent_logs
     )
 
 @app.route('/execute_task', methods=['POST'])
@@ -296,8 +332,8 @@ def logs():
             
     return render_template(
         'pages/logs.html',
-        directories=directories,
-        files=files,
+                                directories=directories, 
+                                files=files, 
         current_path=current_path,
         parent_path=parent_path,
         breadcrumbs=build_breadcrumbs(current_path)
@@ -321,6 +357,78 @@ def api_log_content(filename):
             content = f.read()
         return jsonify({'content': content})
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/inventory')
+@login_required
+def inventory():
+    """Inventory management page"""
+    inventory_files = []
+    
+    if os.path.exists(INVENTORY_DIR):
+        for filename in os.listdir(INVENTORY_DIR):
+            if filename.endswith('.ini'):
+                filepath = os.path.join(INVENTORY_DIR, filename)
+                if os.path.isfile(filepath):
+                    stat = os.stat(filepath)
+                    inventory_files.append({
+                        'name': filename,
+                        'size': stat.st_size,
+                        'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                    })
+    
+    inventory_files.sort(key=lambda x: x['name'])
+    return render_template('pages/inventory.html', inventory_files=inventory_files)
+
+@app.route('/api/inventory/<filename>')
+@login_required
+def api_inventory_content(filename):
+    """API endpoint to get inventory file content"""
+    # Only allow .ini files
+    if not filename.endswith('.ini'):
+        return jsonify({'error': 'Invalid file type'}), 400
+    
+    filepath = os.path.join(INVENTORY_DIR, filename)
+    
+    # Security check
+    if not is_safe_path(os.path.abspath(INVENTORY_DIR), os.path.abspath(filepath)):
+        return jsonify({'error': 'Access denied'}), 403
+    
+    if not os.path.exists(filepath) or not os.path.isfile(filepath):
+        return jsonify({'error': 'File not found'}), 404
+    
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return jsonify({'content': content})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/inventory/<filename>', methods=['POST'])
+@login_required
+def api_inventory_save(filename):
+    """API endpoint to save inventory file content"""
+    # Only allow .ini files
+    if not filename.endswith('.ini'):
+        return jsonify({'error': 'Invalid file type'}), 400
+    
+    filepath = os.path.join(INVENTORY_DIR, filename)
+    
+    # Security check
+    if not is_safe_path(os.path.abspath(INVENTORY_DIR), os.path.abspath(filepath)):
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        content = data.get('content', '')
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        log_activity(session['username'], "INVENTORY_SAVE", f"Saved inventory file: {filename}")
+        return jsonify({'success': True, 'message': 'File saved successfully'})
+    except Exception as e:
+        log_activity(session['username'], "INVENTORY_SAVE_ERROR", f"Error saving {filename}: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

@@ -13,6 +13,15 @@
             --coral: #E17564;
         }
         * { box-sizing: border-box; }
+        #threads-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
@@ -31,8 +40,8 @@
             position: fixed;
             inset: -25%;
             background-image:
-                linear-gradient(90deg, rgba(190, 49, 68, 0.1) 2px, transparent 2px),
-                linear-gradient(0deg, rgba(190, 49, 68, 0.05) 1px, transparent 1px);
+                linear-gradient(90deg, rgba(190, 49, 68, 0.05) 2px, transparent 2px),
+                linear-gradient(0deg, rgba(190, 49, 68, 0.02) 1px, transparent 1px);
             background-size: 160px 160px;
             animation: sweep-lines 2.5s ease-out forwards;
             opacity: 0;
@@ -92,11 +101,13 @@
     </style>
 </head>
 <body>
+    <div id="threads-bg"></div>
     <div class="panel">
         <div class="badge">Configuration</div>
         <h1>We couldn't load config.json</h1>
         <p>Please ensure <code>config.json</code> exists in the project root, is readable, and contains valid JSON.</p>
         <p>Once fixed, refresh this page to access the dashboard.</p>
     </div>
+    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
 </body>
 </html>

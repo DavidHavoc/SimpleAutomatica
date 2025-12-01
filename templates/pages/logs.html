@@ -16,6 +16,15 @@
             --dark-red: #6b1c2f;
         }
         * { box-sizing: border-box; }
+        #threads-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
@@ -27,6 +36,8 @@
             background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 100%);
             box-shadow: 0 4px 20px rgba(190, 49, 68, 0.3);
             border-bottom: 2px solid var(--burgundy);
+            position: relative;
+            z-index: 10;
         }
         .navbar-brand {
             font-weight: 600;
@@ -45,12 +56,15 @@
         }
         .logs-container {
             padding: 2rem;
+            position: relative;
+            z-index: 1;
         }
         .card {
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.95);
             border: 1px solid rgba(190, 49, 68, 0.2);
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
         }
         .card-header {
             background: linear-gradient(135deg, var(--dark-red), var(--burgundy));
@@ -59,10 +73,10 @@
             border-bottom: none;
         }
         .card-body {
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.95);
         }
         .list-group-item {
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.95);
             border-color: rgba(190, 49, 68, 0.2);
             color: #e0e0e0;
         }
@@ -79,7 +93,7 @@
             font-weight: 500;
         }
         .log-content {
-            background-color: #0f0f0f;
+            background-color: rgba(15, 15, 15, 0.95);
             border: 1px solid rgba(190, 49, 68, 0.2);
             border-radius: 12px;
             padding: 1rem;
@@ -118,6 +132,8 @@
         }
         footer {
             color: rgba(255, 255, 255, 0.4);
+            position: relative;
+            z-index: 1;
         }
         .bi-folder-fill {
             color: var(--coral);
@@ -125,12 +141,10 @@
         .bi-file-text {
             color: var(--red);
         }
-        .text-muted {
-            color: var(--red) !important;
-        }
     </style>
 </head>
 <body>
+    <div id="threads-bg"></div>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
@@ -143,6 +157,9 @@
                 <div class="ms-auto navbar-nav">
                     <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
                         <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a class="nav-link {% if request.endpoint == 'inventory' %}active{% endif %}" href="{{ url_for('inventory') }}">
+                        <i class="bi bi-hdd-stack"></i> Inventory
                     </a>
                     <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
                         <i class="bi bi-file-text"></i> Logs
@@ -203,7 +220,7 @@
 
                             {% for file in files %}
                                 <a href="#" class="list-group-item list-group-item-action log-item" 
-                                   onclick="loadLogContent('{{ file.path }}')">
+                                   onclick="loadLogContent('{{ file.path }}'); return false;">
                                     <div class="d-flex w-100 justify-content-between">
                                         <div>
                                             <i class="bi bi-file-text me-2"></i>
@@ -247,7 +264,7 @@
 
     <script>
         function loadLogContent(filename) {
-            fetch(`/api/log/${filename}`)
+            fetch('/api/log/' + filename)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('log-title').textContent = filename;
@@ -262,6 +279,7 @@
     <footer class="text-center py-4">
         <small>&copy; 2026 David Zhorzholiani</small>
     </footer>
+    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

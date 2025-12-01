@@ -1,0 +1,20 @@
+---
+# Example Ansible Playbook for simple_Automatica
+# This is a basic playbook to test the automation dashboard
+
+- name: Example Playbook - Ping Test
+  hosts: all
+  gather_facts: yes
+  
+  tasks:
+    - name: Ping all hosts
+      ping:
+      
+    - name: Display message
+      debug:
+        msg: "Hello from simple_Automatica! This playbook ran successfully on {{ inventory_hostname }}"
+    
+    - name: Show current date and time
+      debug:
+        msg: "Current time: {{ ansible_date_time.iso8601 }}"
+

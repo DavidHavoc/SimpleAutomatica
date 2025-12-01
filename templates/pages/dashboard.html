@@ -16,6 +16,15 @@
             --dark-red: #6b1c2f;
         }
         * { box-sizing: border-box; }
+        #threads-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
@@ -30,8 +39,8 @@
             position: fixed;
             inset: -25%;
             background-image:
-                linear-gradient(90deg, rgba(190, 49, 68, 0.08) 2px, transparent 2px),
-                linear-gradient(0deg, rgba(190, 49, 68, 0.04) 1px, transparent 1px);
+                linear-gradient(90deg, rgba(190, 49, 68, 0.03) 2px, transparent 2px),
+                linear-gradient(0deg, rgba(190, 49, 68, 0.02) 1px, transparent 1px);
             background-size: 160px 160px;
             animation: sweep-lines 2.5s ease-out forwards;
             opacity: 0;
@@ -225,9 +234,87 @@
         footer {
             color: rgba(255, 255, 255, 0.4);
         }
+        .recent-logs-card {
+            margin-top: 2rem;
+            background: #1a1a1a;
+            border: 1px solid rgba(190, 49, 68, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .recent-logs-header {
+            background: linear-gradient(135deg, var(--dark-red), var(--burgundy));
+            color: #fff;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .recent-logs-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        .recent-logs-header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+        }
+        .recent-logs-body {
+            padding: 0;
+        }
+        .log-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem 1.5rem;
+            border-bottom: 1px solid rgba(190, 49, 68, 0.15);
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .log-list-item:last-child {
+            border-bottom: none;
+        }
+        .log-list-item:hover {
+            background: rgba(225, 117, 100, 0.1);
+            color: #fff;
+        }
+        .log-list-item .log-name {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .log-list-item .log-name i {
+            color: var(--red);
+        }
+        .log-list-item .log-time {
+            color: var(--coral);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .no-logs {
+            padding: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .view-all-link {
+            display: block;
+            text-align: center;
+            padding: 0.875rem;
+            color: var(--coral);
+            text-decoration: none;
+            border-top: 1px solid rgba(190, 49, 68, 0.15);
+            transition: all 0.2s;
+        }
+        .view-all-link:hover {
+            background: rgba(225, 117, 100, 0.1);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
+    <div id="threads-bg"></div>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
@@ -240,6 +327,9 @@
                 <div class="ms-auto navbar-nav">
                     <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
                         <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a class="nav-link {% if request.endpoint == 'inventory' %}active{% endif %}" href="{{ url_for('inventory') }}">
+                        <i class="bi bi-hdd-stack"></i> Inventory
                     </a>
                     <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
                         <i class="bi bi-file-text"></i> Logs
@@ -328,6 +418,34 @@
                 </div>
             </form>
         </div>
+
+        <div class="recent-logs-card">
+            <div class="recent-logs-header">
+                <h5><i class="bi bi-clock-history me-2"></i>Recent Logs</h5>
+                <span class="badge">Last Hour</span>
+            </div>
+            <div class="recent-logs-body">
+                {% if recent_logs %}
+                    {% for log in recent_logs %}
+                        <a href="{{ url_for('logs') }}?file={{ log.path }}" class="log-list-item">
+                            <div class="log-name">
+                                <i class="bi bi-file-text"></i>
+                                <span>{{ log.name }}</span>
+                            </div>
+                            <span class="log-time">{{ log.modified }}</span>
+                        </a>
+                    {% endfor %}
+                    <a href="{{ url_for('logs') }}" class="view-all-link">
+                        View All Logs <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% else %}
+                    <div class="no-logs">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                        <span>No recent logs in the last hour</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <footer class="text-center py-4">
@@ -368,6 +486,7 @@
             targetFileSelect.disabled = files.length === 0;
         });
     </script>
+    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,6 +1,39 @@
+# Logs
 logs/
+*.log
+
+# Config (keep example, ignore real config)
+config.json
 cookies.txt
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Temporary files
 logs_list.html
+*.tmp

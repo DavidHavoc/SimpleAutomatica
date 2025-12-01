@@ -296,5 +296,3 @@ This project is licensed under the MIT License.
 © 2026 David Zhorzholiani
 
 ---
-
-**simple_Automatica** - Trigger playbooks with confidence
