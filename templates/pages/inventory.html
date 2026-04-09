@@ -4,354 +4,304 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory - simple_Automatica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --black: #0a0a0a;
-            --burgundy: #872341;
-            --red: #BE3144;
-            --coral: #E17564;
-            --dark-red: #6b1c2f;
+            --bg-base: #050505;
+            --primary: #ff4d4d;
+            --primary-glow: rgba(255, 77, 77, 0.4);
+            --primary-muted: rgba(255, 77, 77, 0.15);
+            --surface: rgba(20, 15, 18, 0.6);
+            --surface-hover: rgba(30, 20, 22, 0.7);
+            --border: rgba(255, 77, 77, 0.2);
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
+            --input-bg: rgba(0, 0, 0, 0.4);
         }
-        * { box-sizing: border-box; }
-        #threads-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
-            margin: 0;
-            background: var(--black);
-            color: #e0e0e0;
-        }
-        .navbar {
-            position: relative;
-            z-index: 10;
-            background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 100%);
-            box-shadow: 0 4px 20px rgba(190, 49, 68, 0.3);
-            border-bottom: 2px solid var(--burgundy);
-        }
-        .navbar-brand {
-            font-weight: 600;
-            color: var(--coral) !important;
-        }
-        .nav-link {
-            color: rgba(255, 255, 255, 0.7) !important;
-            margin-left: 0.5rem;
-            border-radius: 999px;
-            padding-inline: 1rem !important;
-            transition: all 0.2s ease;
-        }
-        .nav-link.active, .nav-link:hover {
-            color: #fff !important;
-            background: var(--red);
-        }
-        .inventory-container {
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-        }
-        .card {
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(190, 49, 68, 0.2);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        .card-header {
-            background: linear-gradient(135deg, var(--dark-red), var(--burgundy));
-            color: #fff;
-            border-radius: 16px 16px 0 0 !important;
-            border-bottom: none;
-        }
-        .card-body {
-            background: #1a1a1a;
-        }
-        .list-group-item {
-            background: #1a1a1a;
-            border-color: rgba(190, 49, 68, 0.2);
-            color: #e0e0e0;
-        }
-        .inventory-item {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .inventory-item:hover {
-            background-color: rgba(225, 117, 100, 0.1) !important;
-            border-color: var(--coral) !important;
-        }
-        .inventory-item.active {
-            background-color: rgba(190, 49, 68, 0.2) !important;
-            border-color: var(--red) !important;
-        }
-        .inventory-item small {
-            color: var(--red) !important;
-            font-weight: 500;
-        }
-        .editor-container {
-            background-color: #0f0f0f;
-            border: 1px solid rgba(190, 49, 68, 0.2);
-            border-radius: 12px;
-            padding: 0;
-            overflow: hidden;
-        }
-        .editor-toolbar {
-            background: #1a1a1a;
-            border-bottom: 1px solid rgba(190, 49, 68, 0.2);
-            padding: 0.75rem 1rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .editor-toolbar h6 {
-            margin: 0;
-            color: var(--coral);
-            font-weight: 600;
-        }
-        .btn-save {
-            background: linear-gradient(135deg, var(--burgundy), var(--red));
-            border: none;
-            color: #fff;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-save:hover {
-            background: linear-gradient(135deg, #9a2849, #d13a4f);
-            transform: translateY(-1px);
-        }
-        .btn-save:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        #editor {
-            width: 100%;
-            min-height: 500px;
-            padding: 1rem;
-            background: #0f0f0f;
-            color: #e0e0e0;
-            border: none;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            resize: vertical;
-        }
-        #editor:focus {
-            outline: none;
-        }
-        .placeholder-text {
-            text-align: center;
-            padding: 3rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        footer {
-            color: rgba(255, 255, 255, 0.4);
+            flex-direction: column;
+            overflow-x: hidden;
             position: relative;
-            z-index: 1;
         }
-        .bi-file-earmark-text {
-            color: var(--red);
+
+        .bg-flare {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            z-index: -1;
+            pointer-events: none;
+            animation: breathe 12s ease-in-out infinite alternate;
         }
+        .flare-bl { width: 500px; height: 500px; background: rgba(255, 50, 50, 0.2); bottom: -100px; left: -200px; }
+        .flare-tr { width: 500px; height: 500px; background: rgba(255, 100, 100, 0.3); top: -200px; right: -100px; animation-delay: -4s; }
+
+        @keyframes breathe {
+            0% { transform: scale(1); opacity: 0.2; }
+            100% { transform: scale(1.2); opacity: 0.35; }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: sticky; top: 0; left: 0; width: 100%;
+            background: rgba(5, 5, 5, 0.6);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-size: 1.3rem; font-weight: 600;
+            text-decoration: none; color: var(--text-main);
+        }
+
+        .nav-links { display: flex; gap: 1rem; list-style: none; }
+        .nav-item a {
+            text-decoration: none; color: var(--text-muted);
+            font-weight: 500; font-size: 0.95rem;
+            padding: 0.5rem 1.25rem; border-radius: 99px;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;
+            border: 1px solid transparent;
+        }
+        .nav-item a svg { width: 16px; height: 16px; opacity: 0.8; }
+        .nav-item a:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        .nav-item.active a { color: var(--primary); background: var(--primary-muted); border-color: rgba(255, 77, 77, 0.25); }
+        .nav-item.active a svg { opacity: 1; }
+
+        /* Layout */
+        .main-container {
+            flex: 1; width: 100%; max-width: 1400px; margin: 0 auto;
+            padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;
+        }
+
+        .workspace-grid {
+            display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; flex: 1;
+        }
+
+        /* Glass Cards */
+        .glass-panel {
+            background: var(--surface);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border); border-radius: 20px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-title { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        /* Left Sidebar: File List */
+        .file-list {
+            flex: 1; overflow-y: auto; padding: 1rem;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+
+        .file-item {
+            text-decoration: none; color: var(--text-main);
+            padding: 0.85rem 1rem; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 4px;
+            transition: 0.2s; border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .file-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .file-item.active { background: var(--primary-muted); border-color: rgba(255, 77, 77, 0.3); }
+
+        .file-name { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .file-name svg { color: var(--primary); }
+        .file-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); padding-left: 30px; }
+
+        /* Editor Area */
+        .editor-wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
+        #editor {
+            flex: 1; width: 100%; padding: 1.5rem;
+            background: transparent; color: #e0e0e0;
+            border: none; outline: none; resize: none;
+            font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; line-height: 1.6;
+        }
+
+        #editor:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-save {
+            background: linear-gradient(135deg, #a61c1c, var(--primary));
+            border: none; border-radius: 10px; color: white;
+            padding: 0.6rem 1.25rem; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.3s; box-shadow: 0 4px 15px rgba(255, 77, 77, 0.2);
+        }
+        .btn-save:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255, 77, 77, 0.4); }
+        .btn-save:disabled { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
+
+        /* Alerts */
+        .alert-container { position: fixed; top: 100px; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
         .alert {
-            border-radius: 12px;
-            border: 1px solid;
+            background: rgba(20, 15, 18, 0.9); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); padding: 1rem 1.5rem; border-radius: 12px;
+            display: flex; align-items: center; gap: 12px; color: white; font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: slideInLeft 0.3s ease-out;
         }
-        .alert-success {
-            background: rgba(40, 167, 69, 0.15);
-            border-color: rgba(40, 167, 69, 0.3);
-            color: #4ade80;
-        }
-        .alert-danger {
-            background: rgba(220, 53, 69, 0.15);
-            border-color: rgba(220, 53, 69, 0.3);
-            color: #f87171;
-        }
+        .alert-success { border-left: 4px solid #4ade80; }
+        .alert-danger { border-left: 4px solid var(--primary); }
+        
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+
+        footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+        
+        @media (max-width: 900px) { .workspace-grid { grid-template-columns: 1fr; } .glass-panel { height: 500px; } }
     </style>
 </head>
 <body>
-    <div id="threads-bg"></div>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                simple_Automatica
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="ms-auto navbar-nav">
-                    <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a class="nav-link {% if request.endpoint == 'inventory' %}active{% endif %}" href="{{ url_for('inventory') }}">
-                        <i class="bi bi-hdd-stack"></i> Inventory
-                    </a>
-                    <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
-                        <i class="bi bi-file-text"></i> Logs
-                    </a>
-                    <a class="nav-link" href="{{ url_for('logout') }}">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                </div>
-            </div>
-        </div>
+    <div class="bg-flare flare-bl"></div>
+    <div class="bg-flare flare-tr"></div>
+
+    <nav class="navbar">
+        <a href="{{ url_for('dashboard') }}" class="nav-brand">simple_Automatica</a>
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> Dashboard
+                </a>
+            </li>
+            <li class="nav-item active">
+                <a href="{{ url_for('inventory') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Inventory
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('logs') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Logs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('logout') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Logout
+                </a>
+            </li>
+        </ul>
     </nav>
 
-    <div class="container inventory-container">
-        <div id="alert-container"></div>
+    <div id="alert-container" class="alert-container"></div>
 
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-hdd-stack"></i> Inventory Files
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            {% if inventory_files %}
-                                {% for file in inventory_files %}
-                                    <a href="#" class="list-group-item list-group-item-action inventory-item" 
-                                       data-filename="{{ file.name }}"
-                                       onclick="loadInventory('{{ file.name }}'); return false;">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <div>
-                                                <i class="bi bi-file-earmark-text me-2"></i>
-                                                {{ file.name }}
-                                            </div>
-                                            <small>{{ file.modified }}</small>
-                                        </div>
-                                        <small class="ms-4">{{ file.size }} bytes</small>
-                                    </a>
-                                {% endfor %}
-                            {% else %}
-                                <div class="text-center py-4" style="color: rgba(255, 255, 255, 0.5);">
-                                    <i class="bi bi-inbox fs-1"></i>
-                                    <p class="mt-2">No inventory files found</p>
-                                    <small>Add .ini files to the inventory directory</small>
+    <main class="main-container">
+        <div class="workspace-grid">
+            
+            <!-- Left Sidebar: Inventory Files -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <span class="panel-title"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Inventory Files</span>
+                </div>
+                <div class="file-list">
+                    {% if inventory_files %}
+                        {% for file in inventory_files %}
+                            <div class="file-item" data-filename="{{ file.name }}" onclick="loadInventory('{{ file.name }}')">
+                                <div class="file-name">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                    {{ file.name }}
                                 </div>
-                            {% endif %}
+                                <div class="file-meta">
+                                    <span>{{ file.modified }}</span>
+                                    <span>{{ file.size }} bytes</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center; padding: 2rem; color: var(--text-muted); margin-top: 2rem;">
+                            <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom:10px; opacity:0.5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                            <p>No inventory files found.</p>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
 
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-pencil-square"></i> Inventory Editor
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="editor-wrapper" class="editor-container">
-                            <div class="editor-toolbar">
-                                <h6 id="current-file">Select a file to edit</h6>
-                                <button id="save-btn" class="btn btn-save" onclick="saveInventory()" disabled>
-                                    <i class="bi bi-save me-1"></i> Save Changes
-                                </button>
-                            </div>
-                            <textarea id="editor" placeholder="Select an inventory file from the left to view and edit..."></textarea>
-                        </div>
-                    </div>
+            <!-- Right Area: Editor -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <span class="panel-title" id="current-file">Select a file to edit</span>
+                    <button class="btn-save" id="save-btn" onclick="saveInventory()" disabled>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Save Changes
+                    </button>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="editor" disabled placeholder="Select an inventory file from the left to view and edit..."></textarea>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer>&copy; 2026 David Zhorzholiani</footer>
 
     <script>
         let currentFile = null;
         let originalContent = '';
 
         function loadInventory(filename) {
-            // Update active state
-            document.querySelectorAll('.inventory-item').forEach(item => {
-                item.classList.remove('active');
-            });
+            document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
             document.querySelector(`[data-filename="${filename}"]`).classList.add('active');
 
-            // Load file content
             fetch(`/api/inventory/${filename}`)
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    if (data.error) {
-                        showAlert('danger', data.error);
-                        return;
-                    }
+                    if (data.error) return showAlert('danger', data.error);
                     currentFile = filename;
                     originalContent = data.content;
-                    document.getElementById('editor').value = data.content;
+                    const ed = document.getElementById('editor');
+                    ed.value = data.content;
+                    ed.disabled = false;
                     document.getElementById('current-file').textContent = filename;
                     document.getElementById('save-btn').disabled = false;
-                    document.getElementById('editor').disabled = false;
                 })
-                .catch(error => {
-                    console.error('Error loading inventory:', error);
-                    showAlert('danger', 'Error loading inventory file');
-                });
+                .catch(() => showAlert('danger', 'Error loading file.'));
         }
 
         function saveInventory() {
             if (!currentFile) return;
-
             const content = document.getElementById('editor').value;
-            const saveBtn = document.getElementById('save-btn');
-            
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true;
 
             fetch(`/api/inventory/${currentFile}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: content })
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
-                if (data.error) {
-                    showAlert('danger', data.error);
-                } else {
-                    showAlert('success', `${currentFile} saved successfully!`);
+                if (data.error) showAlert('danger', data.error);
+                else {
+                    showAlert('success', `${currentFile} saved successfully.`);
                     originalContent = content;
                 }
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="bi bi-save me-1"></i> Save Changes';
+                btn.disabled = false;
             })
-            .catch(error => {
-                console.error('Error saving inventory:', error);
-                showAlert('danger', 'Error saving inventory file');
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="bi bi-save me-1"></i> Save Changes';
-            });
+            .catch(() => { showAlert('danger', 'Error saving file.'); btn.disabled = false; });
         }
 
-        function showAlert(type, message) {
-            const alertContainer = document.getElementById('alert-container');
+        function showAlert(type, msg) {
+            const container = document.getElementById('alert-container');
             const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            alertContainer.appendChild(alert);
-            
-            setTimeout(() => {
-                alert.remove();
-            }, 5000);
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = msg;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
         }
 
-        // Keyboard shortcut for save (Ctrl+S or Cmd+S)
         document.getElementById('editor').addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
@@ -360,22 +310,6 @@
                 }
             }
         });
-
-        // Warn before leaving if there are unsaved changes
-        window.addEventListener('beforeunload', function(e) {
-            const currentContent = document.getElementById('editor').value;
-            if (currentFile && currentContent !== originalContent) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
     </script>
-
-    <footer class="text-center py-4">
-        <small>&copy; 2026 David Zhorzholiani</small>
-    </footer>
-    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

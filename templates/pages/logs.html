@@ -4,282 +4,282 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logs - simple_Automatica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --black: #0a0a0a;
-            --burgundy: #872341;
-            --red: #BE3144;
-            --coral: #E17564;
-            --dark-red: #6b1c2f;
+            --bg-base: #050505;
+            --primary: #ff4d4d;
+            --primary-glow: rgba(255, 77, 77, 0.4);
+            --primary-muted: rgba(255, 77, 77, 0.15);
+            --surface: rgba(20, 15, 18, 0.6);
+            --surface-hover: rgba(30, 20, 22, 0.7);
+            --border: rgba(255, 77, 77, 0.2);
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
         }
-        * { box-sizing: border-box; }
-        #threads-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
-            margin: 0;
-            background: var(--black);
-            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
         }
+
+        .bg-flare {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            z-index: -1;
+            pointer-events: none;
+            animation: breathe 12s ease-in-out infinite alternate;
+        }
+        .flare-bl { width: 500px; height: 500px; background: rgba(255, 50, 50, 0.2); bottom: -100px; left: -200px; }
+        .flare-tr { width: 500px; height: 500px; background: rgba(255, 100, 100, 0.3); top: -200px; right: -100px; animation-delay: -4s; }
+
+        @keyframes breathe {
+            0% { transform: scale(1); opacity: 0.2; }
+            100% { transform: scale(1.2); opacity: 0.35; }
+        }
+
+        /* Navigation */
         .navbar {
-            background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 100%);
-            box-shadow: 0 4px 20px rgba(190, 49, 68, 0.3);
-            border-bottom: 2px solid var(--burgundy);
-            position: relative;
-            z-index: 10;
+            position: sticky; top: 0; left: 0; width: 100%;
+            background: rgba(5, 5, 5, 0.6);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
         }
-        .navbar-brand {
-            font-weight: 600;
-            color: var(--coral) !important;
+
+        .nav-brand {
+            font-size: 1.3rem; font-weight: 600;
+            text-decoration: none; color: var(--text-main);
         }
-        .nav-link {
-            color: rgba(255, 255, 255, 0.7) !important;
-            margin-left: 0.5rem;
-            border-radius: 999px;
-            padding-inline: 1rem !important;
-            transition: all 0.2s ease;
+
+        .nav-links { display: flex; gap: 1rem; list-style: none; }
+        .nav-item a {
+            text-decoration: none; color: var(--text-muted);
+            font-weight: 500; font-size: 0.95rem;
+            padding: 0.5rem 1.25rem; border-radius: 99px;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;
+            border: 1px solid transparent;
         }
-        .nav-link.active, .nav-link:hover {
-            color: #fff !important;
-            background: var(--red);
-        }
+        .nav-item a svg { width: 16px; height: 16px; opacity: 0.8; }
+        .nav-item a:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        .nav-item.active a { color: var(--primary); background: var(--primary-muted); border-color: rgba(255, 77, 77, 0.25); }
+        .nav-item.active a svg { opacity: 1; }
+
+        /* Layout */
         .logs-container {
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
+            flex: 1; width: 100%; max-width: 1400px; margin: 0 auto;
+            padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;
         }
-        .card {
-            background: rgba(26, 26, 26, 0.95);
-            border: 1px solid rgba(190, 49, 68, 0.2);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+
+        .breadcrumbs {
+            display: flex; gap: 8px; align-items: center;
+            background: rgba(255, 77, 77, 0.05); border: 1px solid var(--border);
+            padding: 0.75rem 1.25rem; border-radius: 12px;
         }
-        .card-header {
-            background: linear-gradient(135deg, var(--dark-red), var(--burgundy));
-            color: #fff;
-            border-radius: 16px 16px 0 0 !important;
-            border-bottom: none;
+        .breadcrumb-item { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
+        .breadcrumb-item a { color: var(--primary); text-decoration: none; transition: 0.2s; }
+        .breadcrumb-item a:hover { color: #ff8c8c; }
+        .breadcrumb-separator { color: var(--text-muted); opacity: 0.5; }
+
+        .workspace-grid {
+            display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; flex: 1;
         }
-        .card-body {
-            background: rgba(26, 26, 26, 0.95);
+
+        /* Glass Cards */
+        .glass-panel {
+            background: var(--surface);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border); border-radius: 20px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.5s ease-out;
         }
-        .list-group-item {
-            background: rgba(26, 26, 26, 0.95);
-            border-color: rgba(190, 49, 68, 0.2);
-            color: #e0e0e0;
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0, 0, 0, 0.2);
         }
-        .log-item {
-            cursor: pointer;
-            transition: all 0.2s;
+
+        .panel-title { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        /* File List */
+        .file-list {
+            flex: 1; overflow-y: auto; padding: 1rem;
+            display: flex; flex-direction: column; gap: 6px;
         }
-        .log-item:hover {
-            background-color: rgba(225, 117, 100, 0.1) !important;
-            border-color: var(--coral) !important;
+
+        .file-item {
+            text-decoration: none; color: var(--text-main);
+            padding: 0.85rem 1rem; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 4px;
+            transition: 0.2s; border: 1px solid transparent; cursor: pointer;
         }
-        .log-item small {
-            color: var(--red) !important;
-            font-weight: 500;
+
+        .file-item.directory {
+            flex-direction: row; align-items: center; justify-content: space-between; background: rgba(5, 5, 5, 0.4);
         }
-        .log-content {
-            background-color: rgba(15, 15, 15, 0.95);
-            border: 1px solid rgba(190, 49, 68, 0.2);
-            border-radius: 12px;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
+
+        .file-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .file-name { display: flex; align-items: center; gap: 10px; font-weight: 500; font-family: monospace; font-size: 0.95rem; }
+        .file-name svg { color: var(--primary); }
+        .directory .file-name svg { color: #f8caca; }
+        
+        .file-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); padding-left: 28px; }
+
+        /* Viewer Area */
+        .viewer-wrapper { flex: 1; padding: 1.5rem; overflow-y: auto; background: rgba(0,0,0,0.3); }
+        #log-content {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #d1d1d1;
+            line-height: 1.6;
             white-space: pre-wrap;
-            max-height: 500px;
-            overflow-y: auto;
-            color: #e0e0e0;
+            word-wrap: break-word;
         }
-        .breadcrumb {
-            background-color: rgba(190, 49, 68, 0.1);
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            border: 1px solid rgba(190, 49, 68, 0.2);
-        }
-        .breadcrumb-item {
-            color: #e0e0e0;
-        }
-        .breadcrumb-item.active {
-            color: var(--coral);
-        }
-        .breadcrumb-item a {
-            color: var(--red);
-            text-decoration: none;
-        }
-        .breadcrumb-item a:hover {
-            color: var(--coral);
-        }
-        .list-group-item-action:hover {
-            background-color: rgba(225, 117, 100, 0.1);
-        }
-        .bg-light {
-            background-color: rgba(190, 49, 68, 0.15) !important;
-            color: #fff !important;
-        }
-        footer {
-            color: rgba(255, 255, 255, 0.4);
-            position: relative;
-            z-index: 1;
-        }
-        .bi-folder-fill {
-            color: var(--coral);
-        }
-        .bi-file-text {
-            color: var(--red);
-        }
+
+        footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+        
+        @media (max-width: 900px) { .workspace-grid { grid-template-columns: 1fr; } .glass-panel { height: 500px; } }
     </style>
 </head>
 <body>
-    <div id="threads-bg"></div>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                simple_Automatica
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="ms-auto navbar-nav">
-                    <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                    <a class="nav-link {% if request.endpoint == 'inventory' %}active{% endif %}" href="{{ url_for('inventory') }}">
-                        <i class="bi bi-hdd-stack"></i> Inventory
-                    </a>
-                    <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
-                        <i class="bi bi-file-text"></i> Logs
-                    </a>
-                    <a class="nav-link" href="{{ url_for('logout') }}">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                </div>
-            </div>
-        </div>
+    <div class="bg-flare flare-bl"></div>
+    <div class="bg-flare flare-tr"></div>
+
+    <nav class="navbar">
+        <a href="{{ url_for('dashboard') }}" class="nav-brand">simple_Automatica</a>
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('inventory') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Inventory
+                </a>
+            </li>
+            <li class="nav-item active">
+                <a href="{{ url_for('logs') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Logs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('logout') }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Logout
+                </a>
+            </li>
+        </ul>
     </nav>
 
-    <div class="container logs-container">
+    <main class="logs-container">
         {% if breadcrumbs %}
-        <nav aria-label="breadcrumb" class="mb-3">
-            <ol class="breadcrumb">
-                {% for crumb in breadcrumbs %}
-                    {% if loop.last %}
-                        <li class="breadcrumb-item active" aria-current="page">
-                            {{ crumb.name }}
-                        </li>
-                    {% else %}
-                        <li class="breadcrumb-item">
-                            <a href="{{ url_for('logs', path=crumb.path if crumb.path else '') }}">{{ crumb.name }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ol>
-        </nav>
+        <div class="breadcrumbs">
+            {% for crumb in breadcrumbs %}
+                {% if loop.last %}
+                    <span class="breadcrumb-item" style="color: white;">{{ crumb.name }}</span>
+                {% else %}
+                    <span class="breadcrumb-item"><a href="{{ url_for('logs', path=crumb.path if crumb.path else '') }}">{{ crumb.name }}</a></span>
+                    <span class="breadcrumb-separator">/</span>
+                {% endif %}
+            {% endfor %}
+        </div>
         {% endif %}
 
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-journal-text"></i> Log Files
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            {% if parent_path is not none %}
-                                <a href="{{ url_for('logs', path=parent_path) }}" class="list-group-item list-group-item-action bg-light">
-                                    <i class="bi bi-arrow-90deg-up"></i> .. (Go Up)
-                                </a>
-                            {% endif %}
-
-                            {% for dir in directories %}
-                                <a href="{{ url_for('logs', path=dir.path) }}" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-folder-fill me-2"></i>
-                                            {{ dir.name }}
-                                        </div>
-                                    </div>
-                                </a>
-                            {% endfor %}
-
-                            {% for file in files %}
-                                <a href="#" class="list-group-item list-group-item-action log-item" 
-                                   onclick="loadLogContent('{{ file.path }}'); return false;">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <div>
-                                            <i class="bi bi-file-text me-2"></i>
-                                            {{ file.name }}
-                                        </div>
-                                        <small>{{ file.modified }}</small>
-                                    </div>
-                                    <small class="ms-4">{{ file.size }} bytes</small>
-                                </a>
-                            {% endfor %}
-
-                            {% if not directories and not files and parent_path is none %}
-                                <div class="text-center py-4" style="color: rgba(255, 255, 255, 0.5);">
-                                    <i class="bi bi-inbox fs-1"></i>
-                                    <p class="mt-2">No logs found</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+        <div class="workspace-grid">
+            
+            <!-- Left Sidebar -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <span class="panel-title"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Explorer</span>
                 </div>
-            </div>
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header py-3">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-file-earmark-text"></i> 
-                            <span id="log-title">Select a log file to view</span>
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="log-content" class="log-content">
-                            <div class="text-center" style="color: rgba(255, 255, 255, 0.5);">
-                                <i class="bi bi-arrow-left"></i> Select a log file from the left to view its content
+                <div class="file-list">
+                    {% if parent_path is not none %}
+                        <a href="{{ url_for('logs', path=parent_path) }}" class="file-item directory" style="border: 1px dashed rgba(255,255,255,0.2);">
+                            <div class="file-name">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                .. /
+                            </div>
+                        </a>
+                    {% endif %}
+
+                    {% for dir in directories %}
+                        <a href="{{ url_for('logs', path=dir.path) }}" class="file-item directory">
+                            <div class="file-name">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                                {{ dir.name }}
+                            </div>
+                        </a>
+                    {% endfor %}
+
+                    {% for file in files %}
+                        <div class="file-item" onclick="loadLog('{{ file.path }}')">
+                            <div class="file-name">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                {{ file.name }}
+                            </div>
+                            <div class="file-meta">
+                                <span>{{ file.modified }}</span>
+                                <span>{{ file.size }} bytes</span>
                             </div>
                         </div>
-                    </div>
+                    {% endfor %}
+
+                    {% if not directories and not files and parent_path is none %}
+                        <div style="text-align:center; padding: 2rem; color: var(--text-muted); opacity: 0.8;">
+                            <p>No logs found. Execute a playbook first.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Area: Viewer -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <span class="panel-title" id="log-title">Select a log file</span>
+                </div>
+                <div class="viewer-wrapper">
+                    <div id="log-content" style="opacity: 0.5;">Waiting for selection...</div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer>&copy; 2026 David Zhorzholiani</footer>
 
     <script>
-        function loadLogContent(filename) {
-            fetch('/api/log/' + filename)
-                .then(response => response.json())
+        function loadLog(path) {
+            const contentEl = document.getElementById('log-content');
+            contentEl.textContent = 'Loading...';
+            contentEl.style.opacity = '0.5';
+
+            fetch(`/api/log/${encodeURIComponent(path)}`)
+                .then(r => r.json())
                 .then(data => {
-                    document.getElementById('log-title').textContent = filename;
-                    document.getElementById('log-content').textContent = data.content || 'Log file is empty';
+                    document.getElementById('log-title').textContent = path.split('/').pop() || path;
+                    contentEl.textContent = data.content || 'Log file is empty';
+                    contentEl.style.opacity = '1';
                 })
-                .catch(error => {
-                    console.error('Error loading log content:', error);
-                    document.getElementById('log-content').textContent = 'Error loading log content';
+                .catch(() => {
+                    contentEl.textContent = 'Error loading log content. Format may be unsupported or file missing.';
+                    contentEl.style.opacity = '1';
                 });
         }
     </script>
-    <footer class="text-center py-4">
-        <small>&copy; 2026 David Zhorzholiani</small>
-    </footer>
-    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

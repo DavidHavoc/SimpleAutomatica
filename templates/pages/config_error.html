@@ -3,111 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration Error</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+    <title>Configuration Error - simple_Automatica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --black: #0a0a0a;
-            --burgundy: #872341;
-            --red: #BE3144;
-            --coral: #E17564;
+            --bg-base: #050505;
+            --primary: #ff4d4d;
+            --surface: rgba(20, 15, 18, 0.6);
+            --border: rgba(255, 77, 77, 0.2);
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
         }
-        * { box-sizing: border-box; }
-        #threads-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
-            margin: 0;
-            background: var(--black);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
-            color: #fff;
-            position: relative;
             overflow: hidden;
+            position: relative;
+            padding: 2rem;
         }
-        body::before {
-            content: '';
+
+        .bg-flare {
             position: fixed;
-            inset: -25%;
-            background-image:
-                linear-gradient(90deg, rgba(190, 49, 68, 0.05) 2px, transparent 2px),
-                linear-gradient(0deg, rgba(190, 49, 68, 0.02) 1px, transparent 1px);
-            background-size: 160px 160px;
-            animation: sweep-lines 2.5s ease-out forwards;
-            opacity: 0;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            z-index: -1;
+            pointer-events: none;
+            animation: breathe 12s ease-in-out infinite alternate;
         }
-        @keyframes sweep-lines {
-            0% {
-                opacity: 0.25;
-                transform: translateX(0);
-            }
-            60% {
-                opacity: 0.15;
-            }
-            100% {
-                opacity: 0.08;
-                transform: translateX(-140px);
-            }
+        .flare-bl { width: 500px; height: 500px; background: rgba(255, 50, 50, 0.2); bottom: -100px; left: -200px; }
+        .flare-tr { width: 500px; height: 500px; background: rgba(255, 100, 100, 0.3); top: -200px; right: -100px; animation-delay: -4s; }
+
+        @keyframes breathe {
+            0% { transform: scale(1); opacity: 0.2; }
+            100% { transform: scale(1.2); opacity: 0.35; }
         }
+
         .panel {
-            width: min(520px, 100%);
-            background: #1a1a1a;
-            border: 1px solid rgba(190, 49, 68, 0.3);
-            border-radius: 28px;
-            padding: 3rem;
-            box-shadow: 0 25px 80px rgba(190, 49, 68, 0.3);
+            width: 100%;
+            max-width: 520px;
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3.5rem 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             text-align: center;
             position: relative;
-            z-index: 1;
+            z-index: 10;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            background: var(--red);
-            color: #fff;
-            padding: 0.35rem 0.9rem;
+            gap: 8px;
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            color: var(--primary);
+            padding: 0.4rem 1rem;
             border-radius: 999px;
             font-size: 0.85rem;
-            letter-spacing: 0.08em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
+
         h1 {
             margin: 1.5rem 0 1rem;
-            font-size: 1.9rem;
-            color: #fff;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
         }
+
         p {
             margin: 0.85rem 0;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.5;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 1.05rem;
         }
+
         code {
-            background: rgba(190, 49, 68, 0.2);
-            color: var(--coral);
-            padding: 0.2rem 0.45rem;
+            background: rgba(255, 77, 77, 0.15);
+            color: #ffcccc;
+            padding: 0.2rem 0.5rem;
             border-radius: 6px;
-            font-weight: 500;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 2rem 0;
+        }
+        
+        .retry-note {
+            font-size: 0.9rem;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
-    <div id="threads-bg"></div>
+    <div class="bg-flare flare-bl"></div>
+    <div class="bg-flare flare-tr"></div>
+
     <div class="panel">
-        <div class="badge">Configuration</div>
-        <h1>We couldn't load config.json</h1>
-        <p>Please ensure <code>config.json</code> exists in the project root, is readable, and contains valid JSON.</p>
-        <p>Once fixed, refresh this page to access the dashboard.</p>
+        <div class="badge">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            System Error
+        </div>
+        <h1>Configuration Missing</h1>
+        <p>Please ensure <code>config.json</code> exists in the project root, is readable, and contains valid JSON formatting.</p>
+        
+        <div class="divider"></div>
+        <p class="retry-note">Once fixed, refresh this page to connect to the dashboard securely.</p>
     </div>
-    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
 </body>
 </html>

@@ -4,176 +4,263 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - simple_Automatica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --black: #0a0a0a;
-            --burgundy: #872341;
-            --red: #BE3144;
-            --coral: #E17564;
-            --dark-red: #6b1c2f;
+            --bg-color: #050505;
+            --card-bg: rgba(20, 15, 18, 0.6);
+            --card-border: rgba(255, 77, 77, 0.15);
+            --glass-glow: rgba(255, 77, 77, 0.08);
+            --primary: #ff4d4d;
+            --primary-hover: #ff3333;
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
+            --input-bg: rgba(0, 0, 0, 0.5);
+            --input-border: rgba(255, 77, 77, 0.3);
         }
+
         * {
             box-sizing: border-box;
-        }
-        #threads-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
             margin: 0;
-            background: var(--black);
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
-            color: #fff;
             position: relative;
             overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(255, 77, 77, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 77, 77, 0.05), transparent 25%);
         }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: -25%;
-            background-image:
-                linear-gradient(90deg, rgba(190, 49, 68, 0.1) 2px, transparent 2px),
-                linear-gradient(0deg, rgba(190, 49, 68, 0.05) 1px, transparent 1px);
-            background-size: 160px 160px;
-            animation: sweep-lines 2.5s ease-out forwards;
-            opacity: 0;
+
+        /* Abstract Background Animations */
+        .bg-flare {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
             z-index: 0;
+            animation: float 10s ease-in-out infinite alternate;
         }
-        @keyframes sweep-lines {
-            0% {
-                opacity: 0.25;
-                transform: translateX(0);
-            }
-            60% {
-                opacity: 0.15;
-            }
-            100% {
-                opacity: 0.08;
-                transform: translateX(-120px);
-            }
+        
+        .flare-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 77, 77, 0.15);
+            top: -100px;
+            left: -100px;
         }
-        .login-shell {
-            width: 100%;
-            max-width: 440px;
-            background: #1a1a1a;
-            border: 1px solid rgba(190, 49, 68, 0.3);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 25px 80px rgba(190, 49, 68, 0.3);
+        
+        .flare-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(180, 20, 50, 0.15);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 30px) scale(1.1); }
+        }
+
+        /* Login Container */
+        .login-wrapper {
             position: relative;
-            z-index: 1;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .badge-pill {
-            background: var(--red);
-            color: #fff;
-            border-radius: 999px;
-            padding: 0.15rem 0.75rem;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
+
+        @keyframes slideUp {
+            to { transform: translateY(0); opacity: 1; }
         }
-        .brand-title {
+
+        /* Logo Area */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), #a61c1c);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .brand-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #fff, #ff8c8c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Titles */
+        .title {
             font-size: 1.75rem;
             font-weight: 600;
-            margin-top: 0.75rem;
-            margin-bottom: 0.25rem;
-            color: #fff;
+            margin-bottom: 0.5rem;
+            text-align: center;
         }
-        .brand-subtitle {
-            color: rgba(255, 255, 255, 0.6);
+
+        .subtitle {
             font-size: 0.95rem;
+            color: var(--text-muted);
+            text-align: center;
             margin-bottom: 2rem;
+            font-weight: 300;
         }
-        label {
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
             font-weight: 500;
-            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+            color: #d1d1d1;
         }
+
         .form-control {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             border-radius: 12px;
-            padding: 0.9rem;
-            border: 1px solid rgba(190, 49, 68, 0.3);
-            background: #0f0f0f;
-            color: #fff;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
         }
+
         .form-control:focus {
-            border-color: var(--coral);
-            box-shadow: 0 0 0 0.2rem rgba(225, 117, 100, 0.25);
-            background: #0f0f0f;
-            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--glass-glow);
+            background: rgba(20, 5, 5, 0.6);
         }
-        .btn-login {
-            background: linear-gradient(135deg, var(--burgundy), var(--red));
+
+        /* Button */
+        .btn-submit {
+            width: 100%;
+            padding: 0.9rem;
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), #cc0000);
+            color: white;
             border: none;
-            color: #fff;
-            padding: 0.95rem;
-            border-radius: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
             font-weight: 600;
-            letter-spacing: 0.03em;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .btn-login:hover {
+
+        .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 30px rgba(190, 49, 68, 0.5);
-            background: linear-gradient(135deg, #9a2849, #d13a4f);
+            box-shadow: 0 8px 25px rgba(255, 77, 77, 0.4);
+            background: linear-gradient(135deg, var(--primary-hover), #e60000);
         }
-        .accent-bar {
-            width: 60px;
-            height: 6px;
-            border-radius: 3px;
-            background: linear-gradient(90deg, var(--red), var(--coral));
-            margin-bottom: 1.25rem;
+
+        .btn-submit:active {
+            transform: translateY(0);
         }
+
+        /* Alerts */
+        .alert {
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid rgba(255, 77, 77, 0.4);
+            color: #ffcccc;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
         .footer-note {
             text-align: center;
             margin-top: 2rem;
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--text-muted);
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
-    <div id="threads-bg"></div>
-    <div class="login-shell">
-        <span class="badge-pill">simple_Automatica</span>
-        <div class="accent-bar"></div>
-        <h1 class="brand-title">Welcome back</h1>
-        <p class="brand-subtitle">Secure access to your automation toolkit</p>
+    <div class="bg-flare flare-1"></div>
+    <div class="bg-flare flare-2"></div>
+
+    <div class="login-wrapper">
+        <div class="logo-container">
+            <div class="brand-text">simple_Automatica</div>
+        </div>
+
+        <h1 class="title">Welcome Back</h1>
+        <p class="subtitle">Secure access to your automation toolkit</p>
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="alert">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form method="POST" class="mt-3">
-            <div class="mb-3">
+
+        <form method="POST">
+            <div class="form-group">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
             </div>
-            <div class="mb-4">
+            <div class="form-group">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
             </div>
-            <button type="submit" class="btn btn-login w-100">Sign In</button>
+            <button type="submit" class="btn-submit">Sign In</button>
         </form>
+
         <div class="footer-note">
-            <small>&copy; 2026 David Zhorzholiani</small>
+            &copy; 2026 David Zhorzholiani
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/threads.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
